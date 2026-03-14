@@ -1,5 +1,5 @@
 from pathlib import Path
-from data_loader import load_splits, load_transformations
+from data_loader import load_splits
 from logger import logger
 import pickle
 import json
@@ -13,7 +13,19 @@ from sklearn.metrics import (
     confusion_matrix,
 )
 
+import yaml
+
+
+
 PROJECT_ROOT = Path(__file__).parent.parent
+
+
+def load_params(params_path=None):
+    if params_path is None:
+        params_path = PROJECT_ROOT / "config" / "params.yaml"
+    with open(params_path, "r") as f:
+        return yaml.safe_load(f)
+    
 
 
 def load_model(path=None):
@@ -25,10 +37,8 @@ def load_model(path=None):
 
 def evaluate(model, X_test, y_test):
     logger.info("Starting evaluation.")
-    
+    y_test = np.array(y_test, dtype=int)  # ← move to top
     y_pred = model.predict(X_test)
-    y_test = np.array(y_test, dtype=int)  
-    
     y_prob = model.predict_proba(X_test)[:, 1]
     metrics = {
         "accuracy":  round(accuracy_score(y_test, y_pred), 4),
@@ -134,23 +144,14 @@ def save_comparison(current, previous, path=None):
 
 
 if __name__ == "__main__":
+    params = load_params()
+    PROCESSED_PATH = PROJECT_ROOT / params["validation_data"]["path"]
     METRICS_PATH = PROJECT_ROOT / "reports" / "metrics.json"
 
-    # Load
-    X_train, X_test, y_train, y_test = load_splits()
+    X_train, X_test, y_train, y_test = load_splits(path=PROCESSED_PATH)
     model = load_model()
-
-    # Load previous metrics before overwriting
     previous_metrics = load_previous_metrics(METRICS_PATH)
-
-    # Evaluate
     current_metrics = evaluate(model, X_test, y_test)
-
-    # Compare current vs previous
     compare_metrics(current_metrics, previous_metrics)
-
-    save_comparison(current_metrics, previous_metrics)
-
-    # Save current metrics
-    save_metrics(current_metrics, previous_metrics)
-
+    save_comparison(current_metrics, previous_metrics)   # ← add this
+    save_metrics(current_metrics, previous_metrics=previous_metrics)

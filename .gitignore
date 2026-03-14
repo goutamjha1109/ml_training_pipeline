@@ -6,7 +6,7 @@ test.py
 src/__pycache__
 
 # data and models — tracked by DVC not git
-data/
+data/telecom_churn/processed/
 models/
 
 # DVC cache
@@ -22,5 +22,5 @@ __pycache__/
 *.pyo
 .env
 
-# reports — keep metrics.md but ignore others if needed
-reports/
+# reports — keep metrics visible on GitHub
+reports/metrics_comparison.json
