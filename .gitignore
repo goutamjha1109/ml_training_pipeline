@@ -1,1 +1,26 @@
+# existing
+.vscode
 venv311
+test.ipynb
+test.py
+src/__pycache__
+
+# data and models — tracked by DVC not git
+data/
+models/
+
+# DVC cache
+.dvc/cache
+.dvc/tmp
+
+# logs
+logs/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# reports — keep metrics.md but ignore others if needed
+reports/

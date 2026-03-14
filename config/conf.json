@@ -1,0 +1,13 @@
+{
+    "id": ["customerID"],
+    "target": ["Churn"],
+    "numerical": ["tenure", "MonthlyCharges", "TotalCharges", "SeniorCitizen"],
+    "binary_categorical": [
+        "gender", "Partner", "Dependents", "PhoneService", "PaperlessBilling"
+    ],
+    "multi_categorical": [
+        "MultipleLines", "InternetService", "OnlineSecurity", "OnlineBackup",
+        "DeviceProtection", "TechSupport", "StreamingTV", "StreamingMovies",
+        "Contract", "PaymentMethod"
+    ]
+}
