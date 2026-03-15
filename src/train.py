@@ -27,12 +27,12 @@ def read_data(path):
     return id_col, X, y, bundle
 
 
-def split_data(X, y, test_size, random_state):
+def split_data(X, y, test_size,save_path, random_state):
     logger.info("Splitting data into train/test sets.")
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=test_size, random_state=random_state
     )
-    save_splits(X_train, X_test, y_train, y_test)
+    save_splits(X_train, X_test, y_train, y_test, save_path)
     logger.info("Data split into training and testing sets.")
     return X_train, X_test, y_train, y_test
 
@@ -73,6 +73,8 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test = split_data(
         X, y,
         test_size=data_params["test_size"],
-        random_state=data_params["random_state"]
+        save_path=PROCESSED_PATH,
+        random_state=data_params["random_state"],
+        
     )
     train(X_train, y_train, model_params)
