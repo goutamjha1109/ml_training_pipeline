@@ -23,4 +23,4 @@ __pycache__/
 .env
 
 # reports — keep metrics visible on GitHub
-reports/metrics_comparison.json
+# reports/metrics_comparison.json

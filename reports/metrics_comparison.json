@@ -1,0 +1,32 @@
+{
+    "accuracy": {
+        "previous": 0.7939,
+        "current": 0.7939,
+        "delta": 0.0,
+        "direction": "same"
+    },
+    "precision": {
+        "previous": 0.6489,
+        "current": 0.6489,
+        "delta": 0.0,
+        "direction": "same"
+    },
+    "recall": {
+        "previous": 0.4893,
+        "current": 0.4893,
+        "delta": 0.0,
+        "direction": "same"
+    },
+    "f1_score": {
+        "previous": 0.5579,
+        "current": 0.5579,
+        "delta": 0.0,
+        "direction": "same"
+    },
+    "roc_auc": {
+        "previous": 0.8315,
+        "current": 0.8315,
+        "delta": 0.0,
+        "direction": "same"
+    }
+}
