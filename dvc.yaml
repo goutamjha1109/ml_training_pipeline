@@ -1,0 +1,36 @@
+stages:
+  train:
+    cmd: python src/train.py
+    deps:
+      - src/train.py
+      - src/data_loader.py
+      - config/params.yaml
+      - config/conf.json
+      - data/telecom_churn/raw/telecom_churn.csv
+    params:
+      - config/params.yaml:
+          - data
+          - model
+    outs:
+      - data/telecom_churn/processed
+      - models/model.pkl
+      - models/transformations.pkl
+
+  validate:
+    cmd: python src/validate.py
+    deps:
+      - src/validate.py
+      - src/data_loader.py
+      - data/telecom_churn/processed
+      - models/model.pkl
+    
+    params:
+      - config/params.yaml:
+          - validation_data
+          
+    metrics:
+      - reports/metrics.json:
+          cache: false
+    outs:
+      - reports/metrics.md:
+          cache: false

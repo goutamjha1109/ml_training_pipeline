@@ -1,0 +1,82 @@
+schema: '2.0'
+stages:
+  train:
+    cmd: python src/train.py
+    deps:
+    - path: config/conf.json
+      hash: md5
+      md5: 8d35eb193ce2dc3551fcfc035989b738
+      size: 485
+    - path: config/params.yaml
+      hash: md5
+      md5: e1b114b0d13a0bc6f40250a56398e541
+      size: 221
+    - path: data/telecom_churn/raw/telecom_churn.csv
+      hash: md5
+      md5: 0f9de68e012bd3aed5fa7cdc9fc421af
+      size: 977501
+    - path: src/data_loader.py
+      hash: md5
+      md5: 49034052b69d7a52d52af7ef0f340935
+      size: 3477
+    - path: src/train.py
+      hash: md5
+      md5: 6993ba28ec10b5079ef4a754e6fa3c59
+      size: 2516
+    params:
+      config/params.yaml:
+        data:
+          path: data/telecom_churn/raw/telecom_churn.csv
+          test_size: 0.2
+          random_state: 42
+        model:
+          n_estimators: 100
+          max_depth: 10
+          random_state: 42
+    outs:
+    - path: data/telecom_churn/processed
+      hash: md5
+      md5: 15a5a1b645eaf1c0eec4b06728fb9b7f.dir
+      size: 715935
+      nfiles: 4
+    - path: models/model.pkl
+      hash: md5
+      md5: d2b9e4a07eca04793bac82704a7a4d46
+      size: 5698137
+    - path: models/transformations.pkl
+      hash: md5
+      md5: 670b2aad9f276e96d2a770dd86e181b2
+      size: 1729
+  validate:
+    cmd: python src/validate.py
+    deps:
+    - path: data/telecom_churn/processed
+      hash: md5
+      md5: 15a5a1b645eaf1c0eec4b06728fb9b7f.dir
+      size: 715935
+      nfiles: 4
+    - path: models/model.pkl
+      hash: md5
+      md5: d2b9e4a07eca04793bac82704a7a4d46
+      size: 5698137
+    - path: src/data_loader.py
+      hash: md5
+      md5: 49034052b69d7a52d52af7ef0f340935
+      size: 3477
+    - path: src/validate.py
+      hash: md5
+      md5: 077a9b567abc35c5ec7fb8e7c34d7ddc
+      size: 5416
+    params:
+      config/params.yaml:
+        validation_data:
+          path: data/telecom_churn/processed
+    outs:
+    - path: reports/metrics.json
+      hash: md5
+      md5: d796e25abf60be81ba2aefad450b9b78
+      size: 275
+    - path: reports/metrics.md
+      hash: md5
+      md5: 742700a4b7c712d9ed1701f2ebd95774
+      size: 297
