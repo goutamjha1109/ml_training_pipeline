@@ -12,12 +12,26 @@ from sklearn.metrics import (
     roc_auc_score,
     confusion_matrix,
 )
-
+import subprocess
 import yaml
 
 
 
 PROJECT_ROOT = Path(__file__).parent.parent
+
+
+
+def load_previous_metrics_from_git():
+    try:
+        result = subprocess.run(
+            ["git", "show", "HEAD:reports/metrics.json"],
+            capture_output=True, text=True
+        )
+        if result.returncode == 0:
+            return json.loads(result.stdout)
+    except Exception:
+        pass
+    return None
 
 
 def load_params(params_path=None):
@@ -150,7 +164,8 @@ if __name__ == "__main__":
 
     X_train, X_test, y_train, y_test = load_splits(path=PROCESSED_PATH)
     model = load_model()
-    previous_metrics = load_previous_metrics(METRICS_PATH)
+    # previous_metrics = load_previous_metrics(METRICS_PATH)
+    previous_metrics = load_previous_metrics_from_git()
     current_metrics = evaluate(model, X_test, y_test)
     compare_metrics(current_metrics, previous_metrics)
     save_comparison(current_metrics, previous_metrics)   # ← add this

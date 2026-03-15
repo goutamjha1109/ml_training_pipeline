@@ -34,5 +34,3 @@ stages:
     outs:
       - reports/metrics.md:
           cache: false
-      - reports/metrics_comparison.json:
-          cache: false
