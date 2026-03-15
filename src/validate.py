@@ -74,7 +74,7 @@ def compare_metrics(current, previous):
             delta = round(curr_val - prev_val, 4)
             direction = "↑" if delta > 0 else ("↓" if delta < 0 else "→")
             logger.info(f"{key:12s}: {prev_val} → {curr_val}  {direction} ({delta:+.4f})")
-
+    
 
 def save_metrics(metrics,previous_metrics=None,path=None):
     if path is None:
