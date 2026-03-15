@@ -65,8 +65,8 @@ stages:
       size: 3369
     - path: src/validate.py
       hash: md5
-      md5: 75990132e2fd3a5dc19f38769ee7e3d2
-      size: 5260
+      md5: 951739f7166643dbd4232eb16c2587dc
+      size: 5664
     params:
       config/params.yaml:
         validation_data:
@@ -78,5 +78,5 @@ stages:
       size: 259
     - path: reports/metrics.md
       hash: md5
-      md5: f31d47dfe6b91bc93fcdb7d846f8b844
-      size: 281
+      md5: 4f5e76f99bccc7f0b7c4954dd18e549b
+      size: 584
