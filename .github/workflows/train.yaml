@@ -3,8 +3,6 @@ name: ML Pipeline
 on:
   push:
     branches: [master]
-  pull_request:
-    branches: [master]
 
 jobs:
   train-and-validate:
@@ -37,11 +35,15 @@ jobs:
       - name: Compare metrics with previous run
         run: dvc metrics diff HEAD~1 || true
 
+      - name: Update README 
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: python src/update_readme.py
+
       - name: Commit metrics back to repo
-        if: github.ref == 'refs/heads/master'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add reports/metrics.json reports/metrics.md dvc.lock
+          git add reports/metrics.json reports/metrics.md reports/metrics_comparison.json dvc.lock README.md
           git diff --staged --quiet || git commit -m "update metrics [skip ci]"
           git push
