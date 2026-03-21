@@ -1,0 +1,91 @@
+schema: '2.0'
+stages:
+  train:
+    cmd: python src/train.py --schema "config/schema.json" --params 
+      "config/params.yaml"
+    deps:
+    - path: config/params.yaml
+      hash: md5
+      md5: f2f9b6c7ad48a9534cfb0961e043dda2
+      size: 344
+    - path: config/schema.json
+      hash: md5
+      md5: 699430fcf839617d1b6f1bcf8ae22b68
+      size: 472
+    - path: data/telecom_churn/raw/telecom_churn.csv
+      hash: md5
+      md5: 3b0bfab28a8101b4e4fdd08025a5c235
+      size: 970457
+    - path: src/data_loader.py
+      hash: md5
+      md5: eea96fb53366a3172a5e6cffd14729e2
+      size: 3361
+    - path: src/train.py
+      hash: md5
+      md5: be074cba39a2d78cd1a3afcfcb727362
+      size: 2974
+    params:
+      config/params.yaml:
+        data:
+          path: data/telecom_churn/raw/telecom_churn.csv
+          test_size: 0.2
+          random_state: 42
+        model:
+          artifacts_path: artifacts
+          n_estimators: 100
+          max_depth: 10
+          random_state: 42
+    outs:
+    - path: artifacts/model.pkl
+      hash: md5
+      md5: dc4268bf878214d034983dd4e6f65496
+      size: 5698145
+    - path: artifacts/transformations.pkl
+      hash: md5
+      md5: 670b2aad9f276e96d2a770dd86e181b2
+      size: 1729
+    - path: data/telecom_churn/processed
+      hash: md5
+      md5: dcd58e516945ad27bad802b51c80ac83.dir
+      size: 884330
+      nfiles: 4
+  validate:
+    cmd: python src/validate.py  --params "config/params.yaml"
+    deps:
+    - path: artifacts/model.pkl
+      hash: md5
+      md5: dc4268bf878214d034983dd4e6f65496
+      size: 5698145
+    - path: config/params.yaml
+      hash: md5
+      md5: f2f9b6c7ad48a9534cfb0961e043dda2
+      size: 344
+    - path: data/telecom_churn/processed
+      hash: md5
+      md5: dcd58e516945ad27bad802b51c80ac83.dir
+      size: 884330
+      nfiles: 4
+    - path: src/data_loader.py
+      hash: md5
+      md5: eea96fb53366a3172a5e6cffd14729e2
+      size: 3361
+    - path: src/validate.py
+      hash: md5
+      md5: 0f4e5f39a31cf78465957f1ca107b9c2
+      size: 5607
+    params:
+      config/params.yaml:
+        reports:
+          metrics_path: reports/metrics.json
+          comparison_path: reports/metrics_comparison.json
+        validation_data:
+          path: data/telecom_churn/processed
+    outs:
+    - path: reports/metrics.json
+      hash: md5
+      md5: 6d9d168fcb67f55082ecb5f512fafb46
+      size: 259
+    - path: reports/metrics.md
+      hash: md5
+      md5: f31d47dfe6b91bc93fcdb7d846f8b844
+      size: 281
