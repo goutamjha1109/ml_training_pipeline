@@ -4,29 +4,31 @@ import json
 import pickle
 from sklearn.preprocessing import LabelEncoder
 from pathlib import Path
-
-PROJECT_ROOT = Path(__file__).parent.parent
-
-
-
-def load_config(config_path=None):
-    if config_path is None:
-        config_path = PROJECT_ROOT / "config" / "conf.json"
-    with open(config_path, "r") as f:
-        config = json.load(f)
-    return config
+from utils import get_train_args, load_schema
+# PROJECT_ROOT = Path(__file__).parent.parent
 
 
-# Column registry
-COLUMN_REGISTRY = load_config()
+
+# def load_config(config_path=None):
+#     if config_path is None:
+#         config_path = PROJECT_ROOT / "config" / "conf.json"
+#     with open(config_path, "r") as f:
+#         config = json.load(f)
+#     return config
+
+
+# # Column registry
+# COLUMN_REGISTRY = load_config()
+
+
 
 def load_data(path):
     df = pd.read_csv(path)
     return df
 
 
-def preprocess_data(df):
-    numerical_cols = COLUMN_REGISTRY["numerical"]
+def preprocess_data(df, schema):
+    numerical_cols = schema["numerical"]
     # binary_cols = COLUMN_REGISTRY["binary_categorical"]
     # multi_categorical_cols = COLUMN_REGISTRY["multi_categorical"]
 
@@ -35,12 +37,12 @@ def preprocess_data(df):
     df.dropna(inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    id_col = df[COLUMN_REGISTRY["id"]].copy()
-    df.drop(columns=COLUMN_REGISTRY["id"], inplace=True)
+    id_col = df[schema["id"]].copy()
+    df.drop(columns=schema["id"], inplace=True)
 
     # Fit and save label encoders per binary column
     label_encoders = {}
-    for col in COLUMN_REGISTRY["binary_categorical"]:
+    for col in schema["binary_categorical"]:
         le = LabelEncoder()
         df[col] = le.fit_transform(df[col])
         label_encoders[col] = le  # save fitted encoder
@@ -51,7 +53,7 @@ def preprocess_data(df):
     label_encoders["Churn"] = le_target
 
     # One-hot encode
-    df = pd.get_dummies(df, columns=COLUMN_REGISTRY["multi_categorical"], drop_first=True)
+    df = pd.get_dummies(df, columns=schema["multi_categorical"], drop_first=True)
 
     # Save the final column order (critical for prediction alignment)
     feature_columns = df.drop("Churn", axis=1).columns.tolist()
@@ -63,30 +65,31 @@ def preprocess_data(df):
     transformation_bundle = {
         "label_encoders": label_encoders,   # fitted LabelEncoders
         "feature_columns": feature_columns, # column order after get_dummies
-        "column_registry": COLUMN_REGISTRY, # column type registry
+        "column_registry": schema, # column type registry
     }
 
     return id_col, X, y, transformation_bundle
 
 
-def save_transformations(bundle, path=None):
-    if path is None:
-        path = PROJECT_ROOT / "models" / "transformations.pkl"
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "wb") as f:
+def save_transformations(bundle, dir_path):
+    dir_path = Path(dir_path)
+    dir_path.mkdir(parents=True, exist_ok=True)
+
+    file_path = dir_path / "transformations.pkl"
+
+    with open(file_path, "wb") as f:
         pickle.dump(bundle, f)
 
 
-def load_transformations(path=None):
-    if path is None:
-        path = PROJECT_ROOT / "models" / "transformations.pkl"
+def load_transformations(path):
+    # if path is None:
+    #     path = PROJECT_ROOT / "models" / "transformations.pkl"
     with open(path, "rb") as f:
         return pickle.load(f)
 
-def save_splits(X_train, X_test, y_train, y_test, path=None):
-    if path is None:
-        path = PROJECT_ROOT / "data" / "telecom_churn" / "processed"
+def save_splits(X_train, X_test, y_train, y_test, path):
+    # if path is None:
+    #     path = PROJECT_ROOT / "data" / "telecom_churn" / "processed"
     path = Path(path)
     path.mkdir(parents=True, exist_ok=True)
     
@@ -96,9 +99,9 @@ def save_splits(X_train, X_test, y_train, y_test, path=None):
     pickle.dump(y_test,  open(path / "y_test.pkl",  "wb"))
 
 
-def load_splits(path=None):
-    if path is None:
-        path = PROJECT_ROOT / "data" / "telecom_churn" / "processed"
+def load_splits(path):
+    # if path is None:
+    #     path = PROJECT_ROOT / "data" / "telecom_churn" / "processed"
     path = Path(path)
 
     X_train = pickle.load(open(path / "X_train.pkl", "rb"))
