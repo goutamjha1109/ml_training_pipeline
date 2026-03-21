@@ -14,38 +14,24 @@ from sklearn.metrics import (
 )
 import subprocess
 import yaml
+from utils import get_validate_args, load_params
 
 
-
-PROJECT_ROOT = Path(__file__).parent.parent
-
+# PROJECT_ROOT = Path(__file__).parent.parent
 
 
-def load_previous_metrics_from_git():
-    try:
-        result = subprocess.run(
-            ["git", "show", "HEAD:reports/metrics.json"],
-            capture_output=True, text=True
-        )
-        if result.returncode == 0:
-            return json.loads(result.stdout)
-    except Exception:
-        pass
-    return None
-
-
-def load_params(params_path=None):
-    if params_path is None:
-        params_path = PROJECT_ROOT / "config" / "params.yaml"
-    with open(params_path, "r") as f:
-        return yaml.safe_load(f)
+# def load_params(params_path=None):
+#     if params_path is None:
+#         params_path = PROJECT_ROOT / "config" / "params.yaml"
+#     with open(params_path, "r") as f:
+#         return yaml.safe_load(f)
     
 
 
-def load_model(path=None):
-    if path is None:
-        path = PROJECT_ROOT / "models" / "model.pkl"
-    with open(path, "rb") as f:
+def load_model(path):
+    # if path is None:
+    model_path = Path(path / "model.pkl")
+    with open(model_path, "rb") as f:
         return pickle.load(f)
 
 
@@ -92,7 +78,7 @@ def compare_metrics(current, previous):
 
 def save_metrics(metrics,previous_metrics=None,path=None):
     if path is None:
-        path = PROJECT_ROOT / "reports" / "metrics.json"
+        path = Path("reports/metrics.json")
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w") as f:
@@ -131,13 +117,16 @@ def save_metrics(metrics,previous_metrics=None,path=None):
 
     logger.info(f"Metrics saved to {path}")
 
-def save_comparison(current, previous, path=None):
-    if previous is None:
-        return
-    if path is None:
-        path = PROJECT_ROOT / "reports" / "metrics_comparison.json"
+def save_comparison(current, previous, path):
     path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
     
+    if previous is None:
+        logger.info("No previous metrics — writing empty comparison.")
+        with open(path, "w") as f:
+            json.dump({}, f, indent=4)
+        return
+
     comparison = {}
     keys = ["accuracy", "precision", "recall", "f1_score", "roc_auc"]
     for key in keys:
@@ -151,22 +140,23 @@ def save_comparison(current, previous, path=None):
                 "delta": delta,
                 "direction": "up" if delta > 0 else ("down" if delta < 0 else "same")
             }
-    
+
     with open(path, "w") as f:
         json.dump(comparison, f, indent=4)
     logger.info(f"Comparison saved to {path}")
 
-
 if __name__ == "__main__":
-    params = load_params()
-    PROCESSED_PATH = PROJECT_ROOT / params["validation_data"]["path"]
-    METRICS_PATH = PROJECT_ROOT / "reports" / "metrics.json"
+    args = get_validate_args()
 
+    params = load_params(args.params)
+    PROCESSED_PATH = params["validation_data"]["path"]
+    METRICS_PATH =  Path(params["reports"]["metrics_path"])
+    PREVIOUS_METRIC_PATH = params["reports"]["comparison_path"]
+    MODEL_PATH = Path(params["model"]["artifacts_path"]) 
     X_train, X_test, y_train, y_test = load_splits(path=PROCESSED_PATH)
-    model = load_model()
-    # previous_metrics = load_previous_metrics(METRICS_PATH)
-    previous_metrics = load_previous_metrics_from_git()
+    model = load_model(MODEL_PATH)
+    previous_metrics = load_previous_metrics(METRICS_PATH)
     current_metrics = evaluate(model, X_test, y_test)
     compare_metrics(current_metrics, previous_metrics)
-    save_comparison(current_metrics, previous_metrics)   # ← add this
-    save_metrics(current_metrics, previous_metrics=previous_metrics)
+    save_comparison(current_metrics, previous_metrics,path=PREVIOUS_METRIC_PATH)   # ← add this
+    save_metrics(current_metrics, previous_metrics, path=METRICS_PATH )

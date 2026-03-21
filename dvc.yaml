@@ -1,11 +1,11 @@
 stages:
   train:
-    cmd: python src/train.py
+    cmd: python src/train.py --schema "config/schema.json" --params "config/params.yaml"
     deps:
       - src/train.py
       - src/data_loader.py
       - config/params.yaml
-      - config/conf.json
+      - config/schema.json
       - data/telecom_churn/raw/telecom_churn.csv
     params:
       - config/params.yaml:
@@ -13,21 +13,22 @@ stages:
           - model
     outs:
       - data/telecom_churn/processed
-      - models/model.pkl
-      - models/transformations.pkl
+      - artifacts/model.pkl
+      - artifacts/transformations.pkl
 
   validate:
-    cmd: python src/validate.py
+    cmd: python src/validate.py  --params "config/params.yaml"
     deps:
       - src/validate.py
       - src/data_loader.py
+      - config/params.yaml
       - data/telecom_churn/processed
-      - models/model.pkl
+      - artifacts/model.pkl
     
     params:
       - config/params.yaml:
           - validation_data
-          
+          - reports
     metrics:
       - reports/metrics.json:
           cache: false

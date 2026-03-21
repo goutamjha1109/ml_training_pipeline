@@ -2,11 +2,25 @@ import json
 import re
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).parent.parent
-METRICS_PATH = PROJECT_ROOT / "reports" / "metrics.json"
-COMPARISON_PATH = PROJECT_ROOT / "reports" / "metrics_comparison.json"
-README_PATH = PROJECT_ROOT / "README.md"
+from utils import load_params
+import argparse
 
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--params', type=str, required=True)
+    return parser.parse_args()
+
+# PROJECT_ROOT = Path(__file__).parent.parent
+# METRICS_PATH = PROJECT_ROOT / "reports" / "metrics.json"
+# COMPARISON_PATH = PROJECT_ROOT / "reports" / "metrics_comparison.json"
+# README_PATH = PROJECT_ROOT / "README.md"
+
+args = get_args()
+params = load_params(args.params)
+
+METRICS_PATH    = Path(params["reports"]["metrics_path"])
+COMPARISON_PATH = Path(params["reports"]["comparison_path"])
+README_PATH     = Path("README.md")
 # Load current metrics
 with open(METRICS_PATH) as f:
     m = json.load(f)
