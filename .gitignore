@@ -7,8 +7,7 @@ src/__pycache__
 
 # data and models — tracked by DVC not git
 data/telecom_churn/processed/
-models/
-
+artifacts/
 # DVC cache
 .dvc/cache
 .dvc/tmp

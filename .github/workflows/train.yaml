@@ -37,7 +37,7 @@ jobs:
 
       - name: Update README 
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-        run: python src/update_readme.py
+        run: python src/update_readme.py --params config/params.json
 
       - name: Commit metrics back to repo
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
