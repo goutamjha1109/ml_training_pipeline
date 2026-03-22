@@ -11,27 +11,29 @@ stages:
       - config/params.yaml:
           - data
           - model
+          - paths
     outs:
       - data/telecom_churn/processed
-      - artifacts/model.pkl
-      - artifacts/transformations.pkl
+      - artifacts/pipeline.pkl
+      - artifacts/le_target.pkl
 
   validate:
-    cmd: python src/validate.py  --params "config/params.yaml"
+    cmd: python src/validate.py --params "config/params.yaml"
     deps:
       - src/validate.py
       - src/data_loader.py
       - config/params.yaml
       - data/telecom_churn/processed
-      - artifacts/model.pkl
-    
+      - artifacts/pipeline.pkl
+      - artifacts/le_target.pkl
     params:
       - config/params.yaml:
-          - validation_data
-          - reports
+          - paths
     metrics:
       - reports/metrics.json:
           cache: false
     outs:
       - reports/metrics.md:
+          cache: false
+      - reports/metrics_comparison.json:
           cache: false

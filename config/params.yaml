@@ -1,17 +1,15 @@
+paths:
+  raw_data: "data/telecom_churn/raw/telecom_churn.csv"
+  processed_data: "data/telecom_churn/processed"
+  artifacts: "artifacts"
+  metrics: "reports/metrics.json"
+  comparison: "reports/metrics_comparison.json"
+
 data:
-  path: "data/telecom_churn/raw/telecom_churn.csv"
   test_size: 0.2
   random_state: 42
 
-validation_data:
-  path: "data/telecom_churn/processed"
-
 model:
-  artifacts_path: "artifacts"
   n_estimators: 100
   max_depth: 10
   random_state: 42
-
-reports:
-  metrics_path: "reports/metrics.json"
-  comparison_path: "reports/metrics_comparison.json"

@@ -18,8 +18,8 @@ def get_args():
 args = get_args()
 params = load_params(args.params)
 
-METRICS_PATH    = Path(params["reports"]["metrics_path"])
-COMPARISON_PATH = Path(params["reports"]["comparison_path"])
+METRICS_PATH    = Path(params["paths"]["metrics"])
+COMPARISON_PATH = Path(params["paths"]["comparison"])
 README_PATH     = Path("README.md")
 # Load current metrics
 with open(METRICS_PATH) as f:

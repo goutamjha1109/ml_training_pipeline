@@ -1,25 +1,21 @@
 import pandas as pd
-import os
-import json
 import pickle
 from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
 from pathlib import Path
-from utils import get_train_args, load_schema
-# PROJECT_ROOT = Path(__file__).parent.parent
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder
+from logger import logger
+from dataclasses import dataclass
 
 
-
-# def load_config(config_path=None):
-#     if config_path is None:
-#         config_path = PROJECT_ROOT / "config" / "conf.json"
-#     with open(config_path, "r") as f:
-#         config = json.load(f)
-#     return config
-
-
-# # Column registry
-# COLUMN_REGISTRY = load_config()
-
+@dataclass
+class DataSplit:
+    X_train: pd.DataFrame
+    X_test: pd.DataFrame
+    y_train: pd.Series
+    y_test: pd.Series
+    le_target: LabelEncoder
 
 
 def load_data(path):
@@ -27,86 +23,92 @@ def load_data(path):
     return df
 
 
-def preprocess_data(df, schema):
-    numerical_cols = schema["numerical"]
-    # binary_cols = COLUMN_REGISTRY["binary_categorical"]
-    # multi_categorical_cols = COLUMN_REGISTRY["multi_categorical"]
-
-    for col in numerical_cols:
+def clean_data(df, schema):
+    for col in schema["numerical"]:
         df[col] = pd.to_numeric(df[col], errors="coerce")
     df.dropna(inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    id_col = df[schema["id"]].copy()
-    df.drop(columns=schema["id"], inplace=True)
-
-    # Fit and save label encoders per binary column
-    label_encoders = {}
-    for col in schema["binary_categorical"]:
-        le = LabelEncoder()
-        df[col] = le.fit_transform(df[col])
-        label_encoders[col] = le  # save fitted encoder
-
-    # Encode target separately
     le_target = LabelEncoder()
-    df["Churn"] = le_target.fit_transform(df["Churn"])
-    label_encoders["Churn"] = le_target
+    y = le_target.fit_transform(df[schema["target"][0]])
+    y = pd.Series(y, name=schema["target"][0])
 
-    # One-hot encode
-    df = pd.get_dummies(df, columns=schema["multi_categorical"], drop_first=True)
-
-    # Save the final column order (critical for prediction alignment)
-    feature_columns = df.drop("Churn", axis=1).columns.tolist()
-
-    X = df.drop("Churn", axis=1)
-    y = df["Churn"]
-
-    # Bundle everything needed for prediction
-    transformation_bundle = {
-        "label_encoders": label_encoders,   # fitted LabelEncoders
-        "feature_columns": feature_columns, # column order after get_dummies
-        "column_registry": schema, # column type registry
-    }
-
-    return id_col, X, y, transformation_bundle
+    X = df.drop(columns=schema["id"] + schema["target"])
+    return X, y, le_target
 
 
-def save_transformations(bundle, dir_path):
-    dir_path = Path(dir_path)
-    dir_path.mkdir(parents=True, exist_ok=True)
+def load_and_split_data(path: Path, schema: dict, params: dict) -> DataSplit:
+    test_size    = params["data"]["test_size"]
+    random_state = params["data"]["random_state"]
 
-    file_path = dir_path / "transformations.pkl"
+    df = load_data(path)
+    X, y, le_target = clean_data(df, schema)
 
-    with open(file_path, "wb") as f:
-        pickle.dump(bundle, f)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y,
+        test_size=test_size,
+        random_state=random_state,
+        stratify=y
+    )
+    logger.info(f"Train: {X_train.shape}, Test: {X_test.shape}")
+    return DataSplit(X_train, X_test, y_train, y_test, le_target)
 
 
-def load_transformations(path):
-    # if path is None:
-    #     path = PROJECT_ROOT / "models" / "transformations.pkl"
-    with open(path, "rb") as f:
-        return pickle.load(f)
+def build_preprocessor(schema):
+    preprocessor = ColumnTransformer(transformers=[
+        ("num", "passthrough", schema["numerical"]),
+        ("bin", OrdinalEncoder(
+            handle_unknown="use_encoded_value",
+            unknown_value=-1
+        ), schema["binary_categorical"]),
+        ("cat", OneHotEncoder(
+            handle_unknown="ignore",
+            drop="first",
+            sparse_output=False
+        ), schema["multi_categorical"]),
+    ], remainder="drop")
+    return preprocessor
+
+
+def save_pipeline(pipeline, le_target, artifacts_dir):
+    path = Path(artifacts_dir)
+    path.mkdir(parents=True, exist_ok=True)
+    pickle.dump(pipeline, open(path / "pipeline.pkl", "wb"))
+    pickle.dump(le_target, open(path / "le_target.pkl", "wb"))
+    logger.info(f"Pipeline saved to {path / 'pipeline.pkl'}")
+    logger.info(f"Target encoder saved to {path / 'le_target.pkl'}")
+
+
+def load_pipeline(artifacts_dir):
+    logger.info("Loading artifacts from saved location...")
+    try:
+        artifacts_dir = Path(artifacts_dir)
+        pipeline  = pickle.load(open(artifacts_dir / "pipeline.pkl", "rb"))
+        le_target = pickle.load(open(artifacts_dir / "le_target.pkl", "rb"))
+        logger.info("Pipeline and target encoder loaded successfully.")
+        return pipeline, le_target
+    except FileNotFoundError as e:
+        logger.error(f"Artifact file not found: {e}")
+        raise
+    except Exception as e:
+        logger.error(f"Error loading files: {e}")
+        raise
+
 
 def save_splits(X_train, X_test, y_train, y_test, path):
-    # if path is None:
-    #     path = PROJECT_ROOT / "data" / "telecom_churn" / "processed"
-    path = Path(path)
+    logger.info("Started data save process......")
     path.mkdir(parents=True, exist_ok=True)
-    
     pickle.dump(X_train, open(path / "X_train.pkl", "wb"))
     pickle.dump(X_test,  open(path / "X_test.pkl",  "wb"))
     pickle.dump(y_train, open(path / "y_train.pkl", "wb"))
     pickle.dump(y_test,  open(path / "y_test.pkl",  "wb"))
+    logger.info("Data dumping successful ......")
 
 
 def load_splits(path):
-    # if path is None:
-    #     path = PROJECT_ROOT / "data" / "telecom_churn" / "processed"
     path = Path(path)
-
     X_train = pickle.load(open(path / "X_train.pkl", "rb"))
     X_test  = pickle.load(open(path / "X_test.pkl",  "rb"))
     y_train = pickle.load(open(path / "y_train.pkl", "rb"))
     y_test  = pickle.load(open(path / "y_test.pkl",  "rb"))
-
     return X_train, X_test, y_train, y_test
