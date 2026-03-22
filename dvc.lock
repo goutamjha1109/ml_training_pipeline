@@ -1,0 +1,104 @@
+schema: '2.0'
+stages:
+  train:
+    cmd: python src/train.py --schema "config/schema.json" --params 
+      "config/params.yaml"
+    deps:
+    - path: config/params.yaml
+      hash: md5
+      md5: 6249754184338d7489689f559e19acc3
+      size: 323
+    - path: config/schema.json
+      hash: md5
+      md5: 699430fcf839617d1b6f1bcf8ae22b68
+      size: 472
+    - path: data/telecom_churn/raw/telecom_churn.csv
+      hash: md5
+      md5: 3b0bfab28a8101b4e4fdd08025a5c235
+      size: 970457
+    - path: src/data_loader.py
+      hash: md5
+      md5: 85da53738303883af7a3a02cf56201ba
+      size: 3770
+    - path: src/train.py
+      hash: md5
+      md5: 8a17d932d4f1af9155090701d16d483a
+      size: 1617
+    params:
+      config/params.yaml:
+        data:
+          test_size: 0.2
+          random_state: 42
+        model:
+          n_estimators: 100
+          max_depth: 10
+          random_state: 42
+        paths:
+          raw_data: data/telecom_churn/raw/telecom_churn.csv
+          processed_data: data/telecom_churn/processed
+          artifacts: artifacts
+          metrics: reports/metrics.json
+          comparison: reports/metrics_comparison.json
+    outs:
+    - path: artifacts/le_target.pkl
+      hash: md5
+      md5: 3a77317c096003a5431f34cc3030b09e
+      size: 253
+    - path: artifacts/pipeline.pkl
+      hash: md5
+      md5: bc7eb8fbbde4752100d7957091340fee
+      size: 5693014
+    - path: data/telecom_churn/processed
+      hash: md5
+      md5: 9c0a22d549b291c09053130f8ad2b82f.dir
+      size: 665841
+      nfiles: 4
+  validate:
+    cmd: python src/validate.py --params "config/params.yaml"
+    deps:
+    - path: artifacts/le_target.pkl
+      hash: md5
+      md5: 3a77317c096003a5431f34cc3030b09e
+      size: 253
+    - path: artifacts/pipeline.pkl
+      hash: md5
+      md5: bc7eb8fbbde4752100d7957091340fee
+      size: 5693014
+    - path: config/params.yaml
+      hash: md5
+      md5: 6249754184338d7489689f559e19acc3
+      size: 323
+    - path: data/telecom_churn/processed
+      hash: md5
+      md5: 9c0a22d549b291c09053130f8ad2b82f.dir
+      size: 665841
+      nfiles: 4
+    - path: src/data_loader.py
+      hash: md5
+      md5: 85da53738303883af7a3a02cf56201ba
+      size: 3770
+    - path: src/validate.py
+      hash: md5
+      md5: 939a0e575d7fc66f3301eeb020a252c4
+      size: 5002
+    params:
+      config/params.yaml:
+        paths:
+          raw_data: data/telecom_churn/raw/telecom_churn.csv
+          processed_data: data/telecom_churn/processed
+          artifacts: artifacts
+          metrics: reports/metrics.json
+          comparison: reports/metrics_comparison.json
+    outs:
+    - path: reports/metrics.json
+      hash: md5
+      md5: 6b062c873b862178880859e546f9d191
+      size: 260
+    - path: reports/metrics.md
+      hash: md5
+      md5: caadaac4030e8597df1c22af0ded2b25
+      size: 282
+    - path: reports/metrics_comparison.json
+      hash: md5
+      md5: 99914b932bd37a50b983c5e7c90ae93b
+      size: 2
