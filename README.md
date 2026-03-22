@@ -9,17 +9,17 @@ An end-to-end machine learning pipeline for telecom customer churn prediction.
 <!-- METRICS_START -->
 | Metric | Value |
 |--------|-------|
-| accuracy | 0.7939 |
-| precision | 0.6489 |
-| recall | 0.4893 |
-| f1_score | 0.5579 |
-| roc_auc | 0.8315 |
+| accuracy | 0.7953 |
+| precision | 0.6453 |
+| recall | 0.5107 |
+| f1_score | 0.5701 |
+| roc_auc | 0.8332 |
 
 ### Confusion Matrix
 | | Predicted 0 | Predicted 1 |
 |---|---|---|
-| Actual 0 | 934 | 99 |
-| Actual 1 | 191 | 183 |
+| Actual 0 | 928 | 105 |
+| Actual 1 | 183 | 191 |
 
 ### Comparison vs Previous Run
 | Metric | Previous | Current | Delta | Direction |
