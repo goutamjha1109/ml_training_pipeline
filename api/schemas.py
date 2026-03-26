@@ -25,7 +25,7 @@ class CustomerFeatures(BaseModel):
 
 class PredictionResponse(BaseModel):
     churn_probability:float
-    churn_prediction:bool 
+    churn_prediction:str 
 
 class BatchPrediction(BaseModel):
     customers: List[CustomerFeatures]
