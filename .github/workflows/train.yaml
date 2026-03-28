@@ -27,6 +27,10 @@ jobs:
           pip install dvc
 
       - name: Run DVC pipeline
+        env: 
+          MLFLOW_TRACKING_URI: ${{secrets.MLFLOW_TRACKING_URI}}
+          MLFLOW_TRACKING_USERNAME: ${{secrets.MLFLOW_TRACKING_USERNAME}}
+          MLFLOW_TRACKING_PASSWORD: ${{secrets.MLFLOW_TRACKING_PASSWORD}}
         run: dvc repro
 
       - name: Show metrics
