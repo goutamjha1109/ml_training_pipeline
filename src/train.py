@@ -3,6 +3,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_auc_score, accuracy_score
 import mlflow
 import mlflow.sklearn
+from mlflow.client import MlflowClient
 from dotenv import load_dotenv
 
 from logger import logger
@@ -25,7 +26,16 @@ def build_pipeline(schema, model_params):
     ])
     return pipeline
 
+def get_or_create_experiment(name):
+    client = MlflowClient()
+    exp = client.get_experiment_by_name(name)
 
+    if exp:
+        if exp.lifecycle_stage == "deleted":
+            client.restore_experiment(exp.experiment_id)
+        return exp.experiment_id
+    else:
+        return mlflow.create_experiment(name)
 
 
 def main():
@@ -43,8 +53,11 @@ def main():
     split = load_and_split_data(DATA_PATH, schema, params)
     pipeline = build_pipeline(schema, model_params)
     save_splits(split.X_train, split.X_test, split.y_train, split.y_test, PROCESSED_PATH)
+    exp_id = get_or_create_experiment("churn-prediction")
+    mlflow.set_experiment(experiment_id=exp_id)
+    # mlflow.set_experiment("churn-prediction")
+    print(mlflow.get_tracking_uri())
 
-    mlflow.set_experiment("churn-prediction")
     # mlflow experiment tracking
     with mlflow.start_run():
         mlflow.log_params(model_params)
