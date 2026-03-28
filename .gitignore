@@ -21,5 +21,12 @@ __pycache__/
 *.pyo
 .env
 
+# OS
+.DS_Store
+Thumbs.db
+
+# pytest / coverage
+.pytest_cache/
+*.egg-info/
 # reports — keep metrics visible on GitHub
 # reports/metrics_comparison.json
